@@ -14,6 +14,8 @@ public class Chromosome {
     private int finalCost = 0;
     private int finalWeight = 0;
     private boolean dead = false;
+    private int generation=0;
+
 
     private void evaluate() {
         int cost[] = instance.getCost();
@@ -86,12 +88,16 @@ public class Chromosome {
 
     @Override
     public String toString() {
-        return "Chromosome{" +
+        return "\nChromosome{" +
                 "genotype=" + Arrays.toString(genotype) +
                 ", fitness=" + fitness +
                 ", finalCost=" + finalCost +
                 ", finalWeight=" + finalWeight +
                 ", dead=" + dead +
-                '}';
+                "}";
+    }
+
+    public int getGeneration() {
+        return generation;
     }
 }

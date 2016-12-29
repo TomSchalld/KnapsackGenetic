@@ -1,8 +1,5 @@
 package com.schalldach.knapsack;
 
-import java.util.LinkedList;
-import java.util.List;
-
 /**
  * Created by @author Thomas Schalldach on 29/12/2016 software@thomas-schalldach.de.
  */
@@ -30,21 +27,10 @@ public class Knapsack {
 
     public void solve() {
         final int instanceSize = instance.getInstanceSize();
-        List<Chromosome> initialPopulation = generateInitialPopulation(instanceSize);
+        Population initialPopulation = new Population(instanceSize*instanceSize*(instanceSize/2),instance);
         // evaluate fitness
-        initialPopulation.forEach(System.out::println);
-
-
-
+        System.out.println(initialPopulation);
 
     }
-    private List<Chromosome> generateInitialPopulation(int instanceSize) {
-        final int populationSize = 5;
-        List<Chromosome> population = new LinkedList<>();
-        //generate initial population
-        for (int i = 0; i < populationSize; i++) {
-            population.add(new Chromosome(instance));
-        }
-        return population;
-    }
+
 }
