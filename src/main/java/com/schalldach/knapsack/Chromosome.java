@@ -100,4 +100,10 @@ public class Chromosome {
     public int getGeneration() {
         return generation;
     }
+    public Chromosome[] twoPointCrossover(Chromosome other) {
+        
+
+
+        return new Chromosome[2];
+    }
 }
