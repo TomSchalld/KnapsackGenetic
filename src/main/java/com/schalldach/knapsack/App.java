@@ -20,6 +20,13 @@ public class App
 
         Knapsack sack = new Knapsack(instances.get(0),1);
         sack.solveWithMultiplier();
+        /*int x; //mutation probability 0.02%
+        for (int j = 0; j < 10000; j++) {
+            x = Random.getInt(0,5000);
+            if (x==1) {
+                System.err.println(x);
+            }
+        }*/
 
         TestMemory.test();
         System.gc();

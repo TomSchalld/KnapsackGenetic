@@ -27,9 +27,17 @@ public class Knapsack {
 
     public void solve() {
         final int instanceSize = instance.getInstanceSize();
-        Population initialPopulation = new Population(instanceSize*instanceSize*(instanceSize/2),instance);
+        Population population = new Population(5000,instance);
         // evaluate fitness
-        System.out.println(initialPopulation);
+        while (population.getGeneration() < 1000) {
+            //population.purgeAboveAverageFitness(population.getGeneration());
+            population.bread();
+        }
+        population.purgeDead();
+        //population.purgeBelowAverageFitness(population.getGeneration());
+        System.out.println(population);
+        population.purgeBelowAverageFitness(population.getGeneration());
+        System.out.println(population);
 
     }
 

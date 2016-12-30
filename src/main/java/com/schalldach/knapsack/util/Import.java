@@ -64,8 +64,8 @@ public class Import {
                 cost.add(Integer.valueOf(instanceSplit[k].trim()));
             }
 
-            i.setWeight(PrimitiveConvertor.integerListToArray(weight));
-            i.setCost(PrimitiveConvertor.integerListToArray(cost));
+            i.setWeight(PrimitiveHandler.integerListToArray(weight));
+            i.setCost(PrimitiveHandler.integerListToArray(cost));
             instances.add(i);
         }
 
