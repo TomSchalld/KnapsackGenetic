@@ -7,20 +7,32 @@ import java.util.List;
  */
 public class PrimitiveHandler {
 
-    public static void swapArraysAtIndex(int[] lhs, int [] rhs, int index) {
+    public static boolean arrayEquals(int[] lhs, int[] rhs) {
+        if (lhs.length != rhs.length) {
+            return false;
+        }
+        for (int i = 0; i < lhs.length; i++) {
+            if (lhs[i] != rhs[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static void swapArraysAtIndex(int[] lhs, int[] rhs, int index) {
         if (lhs.length != rhs.length || lhs.length - 1 < index) {
             throw new ArrayIndexOutOfBoundsException("Comparing apples and peers, are we?");
         }
         int tmp = lhs[index];
-        lhs[index]=rhs[index];
-        rhs[index]=tmp;
+        lhs[index] = rhs[index];
+        rhs[index] = tmp;
 
     }
 
     public static int[] arrayCopy(int[] other) {
         int ret[] = new int[other.length];
         for (int i = 0; i < other.length; i++) {
-            ret[i]=other[i];
+            ret[i] = other[i];
         }
         return ret;
     }
@@ -29,7 +41,7 @@ public class PrimitiveHandler {
         int ret[] = new int[list.size()];
         int i = 0;
         for (Integer integer : list) {
-            ret[i++]= integer;
+            ret[i++] = integer;
         }
         return ret;
     }

@@ -14,12 +14,46 @@ import java.util.List;
  * Created by @author Thomas Schalldach on 29/12/2016 software@thomas-schalldach.de.
  */
 public class Import {
-
+    private final int size = 40;
     private List<Instance> instances;
+    private List<int[]>solution;
 
     {
         instances = new LinkedList<>();
-        createInstances(4);
+        solution = new LinkedList<>();
+        createInstances(size);
+        importSolution(size);
+    }
+
+    private void importSolution(int size) {
+        int sol[];
+        InputStream input = this.getClass().getResourceAsStream("/solution/knap_" + size + ".sol.dat");
+        BufferedReader buffer = new BufferedReader(new InputStreamReader(input));
+        String line="";
+        try {
+            while (true) {
+                sol = new int[size];
+                line = buffer.readLine();
+                if (line != null) {
+                    final String instanceSplit[] =  line.split(" ");
+                    final int length = instanceSplit.length;
+                    if (length > 0) {
+
+                        for (int j = 4;j < length; j++) {
+                            sol[j-4]= Integer.parseInt(instanceSplit[j].trim());
+                        }
+                        solution.add(sol);
+                    }
+                } else {
+                    System.out.println("File input completed;");
+                    break;
+                }
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
 
@@ -71,5 +105,7 @@ public class Import {
 
     }
 
-
+    public List<int[]> getSolution() {
+        return solution;
+    }
 }

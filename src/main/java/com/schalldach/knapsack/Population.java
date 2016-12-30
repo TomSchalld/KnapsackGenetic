@@ -1,26 +1,28 @@
 package com.schalldach.knapsack;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Created by @author Thomas Schalldach on 29/12/2016 software@thomas-schalldach.de.
  */
 public class Population {
+    private final int size;
     private List<Chromosome> population;
     private double averageCost = 0;
     private double averageWeight = 0;
     private int generation = 0;
     private double averageFitness;
+    private Instance instance;
 
-    public Population() {
+   /* public Population() {
         population = new LinkedList<>();
-    }
+    }*/
 
     public Population(int size, Instance instance) {
+        this.instance = instance;
+        this.size = size;
         population = new LinkedList<>();
         for (int i = 0; i < size; i++) {
             addChromosome(new Chromosome(instance));
@@ -35,6 +37,8 @@ public class Population {
     }
 
     private void averageEvaluation() {
+        averageCost = 0;
+        averageWeight = 0;
         for (Chromosome chromosome : population) {
             averageCost += chromosome.getFinalCost();
             averageWeight += chromosome.getFinalWeight();
@@ -50,6 +54,17 @@ public class Population {
             averageFitness += chromosome.getFitness();
         }
         averageFitness /= population.size();
+    }
+
+    private void setOnNewPopFitness(List<Chromosome> newPop) {
+        int averageCost = 0;
+        for (Chromosome chromosome : newPop) {
+            averageCost += chromosome.getFinalCost();
+        }
+        averageCost /= newPop.size();
+        for (Chromosome chromosome : newPop) {
+            chromosome.setFitness(chromosome.getFinalCost() / averageCost);
+        }
     }
 
     public void addChromosome(Chromosome chromosome) {
@@ -86,8 +101,19 @@ public class Population {
         evaluate();
     }
 
+    public void purgeAllBelowAverageFitness() {
+        List<Chromosome> buffer = new LinkedList<>();
+        for (Chromosome chromosome : population) {
+            if (chromosome.getFitness() < averageFitness) {
+                buffer.add(chromosome);
+            }
+        }
+        population.removeAll(buffer);
+        evaluate();
+    }
+
     public void purgeAboveAverageFitness(int generation) {
-        System.out.println("generation "+generation+" purged");
+        System.out.println("generation " + generation + " purged");
         List<Chromosome> buffer = new LinkedList<>();
         for (Chromosome chromosome : population) {
             if (chromosome.getFitness() > averageFitness && chromosome.getGeneration() == generation) {
@@ -105,40 +131,44 @@ public class Population {
             if (j == population.size()) {
                 j = 0;
             }
-            newPopulation.addAll(Arrays.asList(population.get(i).twoPointCrossover(population.get(j),generation)));
+            newPopulation.addAll(population.get(i).twoPointCrossover(population.get(j), generation));
         }
-
+        setOnNewPopFitness(newPopulation);
         replaceWeakest(newPopulation);
         evaluate();
         //purgeDead(this.generation);
         //purgeBelowAverageFitness(this.generation);
-        System.out.println(this.population.size());
+        //System.out.println(this.population.size());
     }
 
     public void replaceWeakest(List<Chromosome> nextGen) {
         this.purgeBelowAverageFitness(this.getGeneration());
         this.population.addAll(selectStrongest(nextGen));
-        if (this.population.size() > 5000) {
-            List<Chromosome> sublist = this.population.subList(0,5000);
+        if (this.population.size() > size) {
+            List<Chromosome> sublist = new ArrayList<>(this.population.subList(0, size));
             this.population.clear();
             this.population.addAll(sublist);
         }
     }
 
+    public double getAverageFitnessOFlList(List<Chromosome> pop) {
+        double av = 0.0;
+        for (Chromosome chromosome : pop) {
+            av += chromosome.getFitness();
+        }
+        av /= pop.size();
+        return av;
+    }
+
     public List<Chromosome> selectStrongest(List<Chromosome> population) {
         List<Chromosome> buffer = new LinkedList<>();
+        double av = getAverageFitnessOFlList(population);
         for (Chromosome chromosome : population) {
-            if (chromosome.getFitness() > averageFitness) {
+            if (chromosome.getFitness() > av) {
                 buffer.add(chromosome);
             }
         }
-        double tempAvFitness = 0.0;
-        for (Chromosome chromosome : buffer) {
-            tempAvFitness+=chromosome.getFitness();
-        }
-        final double temp = tempAvFitness/buffer.size();
-
-        return buffer.stream().filter(chromosome -> chromosome.getFitness()>temp).collect(Collectors.toList());
+        return buffer;
     }
 
     @Override
@@ -152,5 +182,41 @@ public class Population {
 
     public int getGeneration() {
         return generation;
+    }
+
+    public void findSolution() {
+        this.purgeDead();
+        int bestCost = 0;
+        int bestWeight = 0;
+        Chromosome bestSoFar=new Chromosome(instance);
+        for (Chromosome chromosome : population) {
+            if (chromosome.getFinalCost() > bestCost) {
+                bestCost = chromosome.getFinalCost();
+                bestWeight = chromosome.getFinalWeight();
+                bestSoFar = chromosome;
+            }
+        }
+        for (Chromosome chromosome : population) {
+            if (chromosome.getFinalWeight() < bestWeight&&chromosome.getFinalCost() > bestCost) {
+                bestCost = chromosome.getFinalCost();
+                bestWeight = chromosome.getFinalWeight();
+                bestSoFar = chromosome;
+            }
+        }
+        population.add(0,bestSoFar);
+        System.out.println(bestSoFar);
+    }
+
+    public void generateSolution() {
+        this.purgeDead();
+        this.evaluate();
+        while (this.averageFitness != 1.0) {
+            evaluate();
+            purgeAllBelowAverageFitness();
+        }
+    }
+
+    public void printSolution() {
+        System.out.println("SOLUTION: " + population.get(0));
     }
 }

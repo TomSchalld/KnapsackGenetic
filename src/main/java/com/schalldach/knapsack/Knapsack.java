@@ -5,7 +5,7 @@ package com.schalldach.knapsack;
  */
 public class Knapsack {
     private final Instance instance;
-    private final int[] solution;
+    private int[] solution;
     private int maxCost;
     private int maxWeight;
     final private int MULTIPLIER;
@@ -17,28 +17,34 @@ public class Knapsack {
     }
 
     public void solveWithMultiplier() {
-        for (int i = 0; i < MULTIPLIER; i++) {
+        //for (int i = 0; i < MULTIPLIER; i++) {
             solve();
-            System.out.println();
+            //System.out.println();
 
-        }
+        //}
     }
 
 
     public void solve() {
         final int instanceSize = instance.getInstanceSize();
-        Population population = new Population(5000,instance);
-        // evaluate fitness
-        while (population.getGeneration() < 1000) {
+        Population population = new Population(500,instance);
+        long time = System.nanoTime();
+        int i = 0;
+        while (population.getGeneration() < 800) {
             //population.purgeAboveAverageFitness(population.getGeneration());
             population.bread();
         }
-        population.purgeDead();
-        //population.purgeBelowAverageFitness(population.getGeneration());
-        System.out.println(population);
-        population.purgeBelowAverageFitness(population.getGeneration());
-        System.out.println(population);
+        System.out.println("Elapsed time of iterations: " +(System.nanoTime()-time)/1000000 + "ms");
+        population.findSolution();
+        System.out.println("Elapsed time to find solution: " +(System.nanoTime()-time)/1000000 + "ms");
+        //population.generateSolution();
+        //population.printSolution();
+        this.solution = population.getPopulation().get(0).getGenotype();
+
 
     }
 
+    public int[] getSolution() {
+        return solution;
+    }
 }

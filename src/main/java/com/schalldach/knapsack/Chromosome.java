@@ -4,6 +4,8 @@ import com.schalldach.knapsack.util.PrimitiveHandler;
 import com.schalldach.knapsack.util.Random;
 
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created by @author Thomas Schalldach on 29/12/2016 software@thomas-schalldach.de.
@@ -17,8 +19,8 @@ public class Chromosome {
     private int finalWeight = 0;
     private boolean dead = false;
     private int generation = 0;
-    private int mutationUpperBound = 5000 ; //std mutation probability 0.02% =5000
-    private boolean mutated = false;
+    private int mutationUpperBound = 500; //std mutation probability 0.02% =5000
+    private boolean mutated;
 
 
     private void evaluate() {
@@ -40,18 +42,17 @@ public class Chromosome {
 
     }
 
-    public Chromosome() {
-    }
-
     public Chromosome(Instance instance, int[] genotype) {
         this.instance = instance;
         this.genotype = genotype;
+        this.mutated = false;
         evaluate();
     }
 
     public Chromosome(Instance instance) {
         this.instance = instance;
         this.genotype = createGenotype();
+        this.mutated = false;
         evaluate();
     }
 
@@ -117,9 +118,10 @@ public class Chromosome {
         return generation;
     }
 
-    public Chromosome[] twoPointCrossover(Chromosome other, int generation) {
+    public List<Chromosome> twoPointCrossover(Chromosome other, int generation) {
         int genotypeChildOne[] = PrimitiveHandler.arrayCopy(this.genotype);
         int genotypeChildTwo[] = PrimitiveHandler.arrayCopy(other.genotype);
+        List<Chromosome> ret = new LinkedList<>();
         Chromosome childOne = new Chromosome(instance, genotypeChildOne);
         Chromosome childTwo = new Chromosome(instance, genotypeChildTwo);
         childOne.setGeneration(generation);
@@ -149,7 +151,9 @@ public class Chromosome {
         }
         childOne.evaluate();
         childTwo.evaluate();
-        return new Chromosome[]{childOne, childTwo};
+        ret.add(childOne);
+        ret.add(childTwo);
+        return ret;
     }
 
     public void mutate() {
