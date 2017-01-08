@@ -45,7 +45,7 @@ public class Import {
                         solution.add(sol);
                     }
                 } else {
-                    System.out.println("File input completed;");
+                    //System.out.println("File input completed;");
                     break;
                 }
             }
@@ -72,7 +72,7 @@ public class Import {
                 if (line != null) {
                     createAndAddInstance(line);
                 } else {
-                    System.out.println("File input completed;");
+                    //System.out.println("File input completed;");
                     break;
                 }
             }
@@ -98,8 +98,8 @@ public class Import {
                 cost.add(Integer.valueOf(instanceSplit[k].trim()));
             }
 
-            i.setWeight(PrimitiveHandler.integerListToArray(weight));
-            i.setCost(PrimitiveHandler.integerListToArray(cost));
+            i.setWeight(Util.integerListToArray(weight));
+            i.setCost(Util.integerListToArray(cost));
             instances.add(i);
         }
 

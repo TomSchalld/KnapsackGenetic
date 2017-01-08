@@ -1,6 +1,6 @@
 package com.schalldach.knapsack;
 
-import com.schalldach.knapsack.util.PrimitiveHandler;
+import com.schalldach.knapsack.util.Util;
 import com.schalldach.knapsack.util.Random;
 
 import java.util.Arrays;
@@ -19,27 +19,33 @@ public class Chromosome {
     private int finalWeight = 0;
     private boolean dead = false;
     private int generation = 0;
-    private int mutationUpperBound = 500; //std mutation probability 0.02% =5000
+    private int mutationUpperBound = 5000; //std mutation probability 0.02% =5000
     private boolean mutated;
 
 
-    private void evaluate() {
+    public void evaluate() {
         int cost[] = instance.getCost();
         int weight[] = instance.getWeight();
         int maxSize = instance.getKnapsackSize();
         finalCost = 0;
         finalWeight = 0;
         for (int i = 0; i < genotype.length; i++) {
+            dead = false;
             if (genotype[i] == 1) {
                 finalCost += cost[i];
                 finalWeight += weight[i];
                 if (finalWeight > maxSize) {
                     dead = true;
+                    fitness = 0;
                     break;
                 }
             }
         }
 
+    }
+
+    public boolean equals(Chromosome obj) {
+        return Util.arrayEquals(this.genotype, obj.genotype);
     }
 
     public Chromosome(Instance instance, int[] genotype) {
@@ -104,14 +110,15 @@ public class Chromosome {
 
     @Override
     public String toString() {
-        return "\nChromosome{" +
-                "genotype=" + Arrays.toString(genotype) +
-                ", fitness=" + fitness +
-                ", finalCost=" + finalCost +
-                ", finalWeight=" + finalWeight +
-                ", dead=" + dead +
-                ", mutated=" + mutated +
-                "}";
+        return "\nChromosome{\n" +
+                "genotype," + Arrays.toString(genotype) +
+                ", fitness," + fitness +
+                ", finalCost," + finalCost +
+                ", finalWeight," + finalWeight +
+                ", dead," + dead +
+                ", mutated," + mutated +
+                ", generation," + generation +
+                "\n}";
     }
 
     public int getGeneration() {
@@ -119,8 +126,8 @@ public class Chromosome {
     }
 
     public List<Chromosome> twoPointCrossover(Chromosome other, int generation) {
-        int genotypeChildOne[] = PrimitiveHandler.arrayCopy(this.genotype);
-        int genotypeChildTwo[] = PrimitiveHandler.arrayCopy(other.genotype);
+        int genotypeChildOne[] = Util.arrayCopy(this.genotype);
+        int genotypeChildTwo[] = Util.arrayCopy(other.genotype);
         List<Chromosome> ret = new LinkedList<>();
         Chromosome childOne = new Chromosome(instance, genotypeChildOne);
         Chromosome childTwo = new Chromosome(instance, genotypeChildTwo);
@@ -139,7 +146,7 @@ public class Chromosome {
         /*System.out.println("Child one:\t" + childOne);
         System.out.println("Child two:\t" + childTwo);*/
         for (int i = crossoverPointOne; i <= crossoverPointTwo; i++) {
-            PrimitiveHandler.swapArraysAtIndex(genotypeChildOne, genotypeChildTwo, i);
+            Util.swapArraysAtIndex(genotypeChildOne, genotypeChildTwo, i);
         }
         /*System.out.println("Child one:\t" + childOne);
         System.out.println("Child two:\t" + childTwo);*/
@@ -163,14 +170,16 @@ public class Chromosome {
     }
 
     public void flipBit(int index) {
-        if (genotype[index] == 0) {
-            genotype[index] = 1;
+        if (this.genotype[index] == 0) {
+            this.genotype[index] = 1;
         } else {
-            genotype[index] = 0;
+            this.genotype[index] = 0;
         }
     }
 
     public void setGeneration(int generation) {
         this.generation = generation;
     }
+
+
 }

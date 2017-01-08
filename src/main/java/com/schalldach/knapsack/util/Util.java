@@ -5,7 +5,11 @@ import java.util.List;
 /**
  * Created by @author Thomas Schalldach on 29/12/2016 software@thomas-schalldach.de.
  */
-public class PrimitiveHandler {
+public class Util {
+
+
+
+
 
     public static boolean arrayEquals(int[] lhs, int[] rhs) {
         if (lhs.length != rhs.length) {

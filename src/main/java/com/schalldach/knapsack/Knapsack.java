@@ -3,12 +3,15 @@ package com.schalldach.knapsack;
 /**
  * Created by @author Thomas Schalldach on 29/12/2016 software@thomas-schalldach.de.
  */
-public class Knapsack {
+public class Knapsack implements Runnable{
     private final Instance instance;
     private int[] solution;
     private int maxCost;
     private int maxWeight;
     final private int MULTIPLIER;
+    private int maxGenerations= 1000;
+    private long finalTimeInMs = 0;
+    private Chromosome solutionChrom;
 
     public Knapsack(Instance instance, int MULTIPLIER) {
         this.instance = instance;
@@ -27,24 +30,40 @@ public class Knapsack {
 
     public void solve() {
         final int instanceSize = instance.getInstanceSize();
-        Population population = new Population(500,instance);
+        Population population = new Population(256*instanceSize,instance);
         long time = System.nanoTime();
-        int i = 0;
-        while (population.getGeneration() < 800) {
-            //population.purgeAboveAverageFitness(population.getGeneration());
+        for (int i = 0; i < maxGenerations; i++) {
             population.bread();
+            if (population.hasNoConvergence()) {
+                //System.out.println(population);
+                break;
+            }
         }
-        System.out.println("Elapsed time of iterations: " +(System.nanoTime()-time)/1000000 + "ms");
-        population.findSolution();
-        System.out.println("Elapsed time to find solution: " +(System.nanoTime()-time)/1000000 + "ms");
+        //System.out.println("final population of instance id: "+instance.getId());
+        //System.out.println(population);
+        finalTimeInMs = (System.nanoTime()-time)/1000000;
+        //System.out.println("Elapsed time of iterations: " +(System.nanoTime()-time)/1000000 + "ms");
+       // population.findBest();
+        //System.out.println("Elapsed time to find solution: " +(System.nanoTime()-time)/1000000 + "ms");
         //population.generateSolution();
         //population.printSolution();
-        this.solution = population.getPopulation().get(0).getGenotype();
+        this.solutionChrom = population.getBest();
+        this.solution = solutionChrom.getGenotype();
 
 
     }
 
     public int[] getSolution() {
         return solution;
+    }
+
+    @Override
+    public void run() {
+        solve();
+        System.gc();
+    }
+
+    public Chromosome getSolutionChrom() {
+        return solutionChrom;
     }
 }

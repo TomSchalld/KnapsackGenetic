@@ -15,6 +15,10 @@ public class Population {
     private int generation = 0;
     private double averageFitness;
     private Instance instance;
+    private final int selectionPressure = 2;// increase to increase pressure
+    private int generationsOfSame = 0;
+    private boolean noConvergence = false;
+    private Chromosome bestSoFar;
 
    /* public Population() {
         population = new LinkedList<>();
@@ -28,7 +32,6 @@ public class Population {
             addChromosome(new Chromosome(instance));
         }
         evaluate();
-        generation++;
     }
 
     public void evaluate() {
@@ -40,6 +43,7 @@ public class Population {
         averageCost = 0;
         averageWeight = 0;
         for (Chromosome chromosome : population) {
+
             averageCost += chromosome.getFinalCost();
             averageWeight += chromosome.getFinalWeight();
         }
@@ -50,14 +54,18 @@ public class Population {
     private void setFitness() {
         averageFitness = 0;
         for (Chromosome chromosome : population) {
-            chromosome.setFitness(chromosome.getFinalCost() / averageCost);
+            if (chromosome.isDead()) {
+                chromosome.setFitness(0);
+            } else {
+                chromosome.setFitness(chromosome.getFinalCost() / averageCost);
+            }
             averageFitness += chromosome.getFitness();
         }
         averageFitness /= population.size();
     }
 
     private void setOnNewPopFitness(List<Chromosome> newPop) {
-        int averageCost = 0;
+        double averageCost = 0;
         for (Chromosome chromosome : newPop) {
             averageCost += chromosome.getFinalCost();
         }
@@ -65,6 +73,7 @@ public class Population {
         for (Chromosome chromosome : newPop) {
             chromosome.setFitness(chromosome.getFinalCost() / averageCost);
         }
+        //System.out.println(newPop);
     }
 
     public void addChromosome(Chromosome chromosome) {
@@ -122,36 +131,62 @@ public class Population {
         }
         population.removeAll(buffer);
     }
+    public List<Chromosome> createIntermediatePopulation(int popSize) {
+       // System.out.println(popSize);
+        //System.out.println(popSize/2);
+        if (popSize > population.size()) {
+            popSize=population.size();
+
+        }
+        List<Chromosome> oldPop = new ArrayList<>(population);
+        oldPop.sort((o1, o2) -> ((int) (o1.getFitness() * 100000 - o2.getFitness() * 100000)));
+        return oldPop.subList(popSize,population.size());
+    }
 
     public void bread() {
-        List<Chromosome> population = new ArrayList<>(this.population);
+        List<Chromosome> intermediate = createIntermediatePopulation(this.population.size()/this.selectionPressure);
+        //System.out.println("intermediate.size "+intermediate.size());
         List<Chromosome> newPopulation = new LinkedList<>();
         this.generation++;
-        for (int i = 0, j = 1; i < population.size(); i++, j++) {
-            if (j == population.size()) {
+        for (int i = 0, j = 1; i < intermediate.size(); i++, j++) {
+            if (j == intermediate.size()) {
                 j = 0;
             }
-            newPopulation.addAll(population.get(i).twoPointCrossover(population.get(j), generation));
+            newPopulation.addAll(intermediate.get(i).twoPointCrossover(intermediate.get(j), generation));
         }
+       // System.out.println("XXXXXXXXXXXXXXXXXX\taverage fitness:"+averageFitness);
         setOnNewPopFitness(newPopulation);
         replaceWeakest(newPopulation);
         evaluate();
+        findBest();
+        if (generationsOfSame > 30) {
+            this.noConvergence=true;
+        }
+
         //purgeDead(this.generation);
         //purgeBelowAverageFitness(this.generation);
         //System.out.println(this.population.size());
     }
 
     public void replaceWeakest(List<Chromosome> nextGen) {
-        this.purgeBelowAverageFitness(this.getGeneration());
-        this.population.addAll(selectStrongest(nextGen));
-        if (this.population.size() > size) {
-            List<Chromosome> sublist = new ArrayList<>(this.population.subList(0, size));
-            this.population.clear();
-            this.population.addAll(sublist);
+        int sizeOfNextGen = nextGen.size();
+        List<Chromosome> oldPop = new ArrayList<>(population);
+        nextGen.sort((o1, o2) -> ((int) (o1.getFitness() * 100000 - o2.getFitness() * 100000)));
+        oldPop.sort((o1, o2) -> ((int) (o1.getFitness() * 100000 - o2.getFitness() * 100000)));
+        /*System.out.println("nextGen");
+        System.out.println(nextGen);
+        System.out.println("oldPop");
+        System.out.println(oldPop);*/
+        if (sizeOfNextGen % 2 == 0) {
+            //System.out.println("Replacing the weak");
+            population.removeAll(oldPop.subList(0,sizeOfNextGen/2));
+            population.addAll(nextGen.subList(sizeOfNextGen/2,sizeOfNextGen));
+            //System.out.println("size of pop: "+population.size());
+
         }
     }
 
-    public double getAverageFitnessOFlList(List<Chromosome> pop) {
+    public double getAverageFitnessOFList(List<Chromosome> pop) {
         double av = 0.0;
         for (Chromosome chromosome : pop) {
             av += chromosome.getFitness();
@@ -162,7 +197,7 @@ public class Population {
 
     public List<Chromosome> selectStrongest(List<Chromosome> population) {
         List<Chromosome> buffer = new LinkedList<>();
-        double av = getAverageFitnessOFlList(population);
+        double av = getAverageFitnessOFList(population);
         for (Chromosome chromosome : population) {
             if (chromosome.getFitness() > av) {
                 buffer.add(chromosome);
@@ -184,11 +219,12 @@ public class Population {
         return generation;
     }
 
-    public void findSolution() {
-        this.purgeDead();
+    public void findBest() {
+        Chromosome oldBest = bestSoFar;
+
         int bestCost = 0;
         int bestWeight = 0;
-        Chromosome bestSoFar=new Chromosome(instance);
+        this.bestSoFar=new Chromosome(instance);
         for (Chromosome chromosome : population) {
             if (chromosome.getFinalCost() > bestCost) {
                 bestCost = chromosome.getFinalCost();
@@ -203,8 +239,11 @@ public class Population {
                 bestSoFar = chromosome;
             }
         }
-        population.add(0,bestSoFar);
-        System.out.println(bestSoFar);
+        if (oldBest != null) {
+            if (oldBest.equals(bestSoFar)) {
+                this.generationsOfSame++;
+            }
+        }
     }
 
     public void generateSolution() {
@@ -218,5 +257,17 @@ public class Population {
 
     public void printSolution() {
         System.out.println("SOLUTION: " + population.get(0));
+    }
+
+    public double getAverageFitness() {
+        return averageFitness;
+    }
+
+    public boolean hasNoConvergence() {
+        return noConvergence;
+    }
+
+    public Chromosome getBest() {
+        return bestSoFar;
     }
 }
