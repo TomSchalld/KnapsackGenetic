@@ -17,9 +17,12 @@ public class Import {
     private final int size = 40;
     private List<Instance> instances;
     private List<int[]>solution;
+    private List<int[]>solutionMeta;
+
 
     {
         instances = new LinkedList<>();
+        solutionMeta = new LinkedList<>();
         solution = new LinkedList<>();
         createInstances(size);
         importSolution(size);
@@ -27,21 +30,26 @@ public class Import {
 
     private void importSolution(int size) {
         int sol[];
+        int solMeta[];
         InputStream input = this.getClass().getResourceAsStream("/solution/knap_" + size + ".sol.dat");
         BufferedReader buffer = new BufferedReader(new InputStreamReader(input));
         String line="";
         try {
             while (true) {
                 sol = new int[size];
+                solMeta = new int[3];
                 line = buffer.readLine();
                 if (line != null) {
                     final String instanceSplit[] =  line.split(" ");
                     final int length = instanceSplit.length;
                     if (length > 0) {
-
+                        for (int i = 0; i < 3; i++) {
+                            solMeta[i]= Integer.parseInt(instanceSplit[i].trim());
+                        }
                         for (int j = 4;j < length; j++) {
                             sol[j-4]= Integer.parseInt(instanceSplit[j].trim());
                         }
+                        solutionMeta.add(solMeta);
                         solution.add(sol);
                     }
                 } else {
@@ -59,6 +67,10 @@ public class Import {
 
     public List<Instance> getInstances() {
         return instances;
+    }
+
+    public List<int[]> getSolutionMeta() {
+        return solutionMeta;
     }
 
     private List<Instance> createInstances(int size) {

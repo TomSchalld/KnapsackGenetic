@@ -161,6 +161,7 @@ public class Population {
         findBest();
         if (generationsOfSame > 30) {
             this.noConvergence=true;
+            bestSoFar.setGeneration(this.generation);
         }
 
         //purgeDead(this.generation);
@@ -226,14 +227,14 @@ public class Population {
         int bestWeight = 0;
         this.bestSoFar=new Chromosome(instance);
         for (Chromosome chromosome : population) {
-            if (chromosome.getFinalCost() > bestCost) {
+            if (chromosome.getFinalCost() > bestCost && !chromosome.isDead()) {
                 bestCost = chromosome.getFinalCost();
                 bestWeight = chromosome.getFinalWeight();
                 bestSoFar = chromosome;
             }
         }
         for (Chromosome chromosome : population) {
-            if (chromosome.getFinalWeight() < bestWeight&&chromosome.getFinalCost() > bestCost) {
+            if (chromosome.getFinalWeight() < bestWeight&&chromosome.getFinalCost() > bestCost && !chromosome.isDead()) {
                 bestCost = chromosome.getFinalCost();
                 bestWeight = chromosome.getFinalWeight();
                 bestSoFar = chromosome;
